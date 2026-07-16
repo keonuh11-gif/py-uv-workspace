@@ -1,51 +1,34 @@
 
-
 import streamlit as st
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import tensorflow as tf
 
+# 모델 불러오기
+model = tf.keras.models.load_model("Model_iris.keras")
 
-# 차트 시각화 소개
-st.title("📊 튜토리얼 5: 차트 시각화")
+# 품종 라벨
+class_names = ["setosa", "versicolor", "virginica"]
 
+# Streamlit 앱 UI 구성
+st.title("🌸 Iris 품종 분류기")
+st.write("아래 입력값을 바탕으로 아이리스 품종을 예측합니다.")
 
+# 사용자 입력 받기
+sepal_length = st.number_input("1. 꽃받침 길이 (Sepal Length)", min_value=0.0, step=0.1, format="%.1f")
+sepal_width = st.number_input("2. 꽃받침 너비 (Sepal Width)", min_value=0.0, step=0.1, format="%.1f")
+petal_length = st.number_input("3. 꽃잎 길이 (Petal Length)", min_value=0.0, step=0.1, format="%.1f")
+petal_width = st.number_input("4. 꽃잎 너비 (Petal Width)", min_value=0.0, step=0.1, format="%.1f")
 
+# 예측 버튼
+if st.button("🌼 품종 예측하기"):
+    # 입력값 배열화
+    input_data = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
 
-# 예시용 숫자 데이터 생성
-data = pd.DataFrame({
-    "x": [1,2,3,4,5],
-    "y": [-0.5, 1, -1, 2 , 0]
-})
+    # 모델 예측
+    predictions = model.predict(input_data)
+    predicted_class = class_names[np.argmax(predictions)]
+    confidence = np.max(predictions)
 
-
-
-
-# matplotlib로 선 그래프를 생성
-fig, ax = plt.subplots()
-ax.plot(data["x"], data["y"], marker='o')
-
-
-# Streamlit 차트 렌더링
-st.pyplot(fig)
-
-# np.random.randn(10, 2) : 정규분포를 따르는 난수를 10행 2열로 구함
-chart_data = pd.DataFrame(np.random.randn(10, 2), columns=["s", "t"])
-st.line_chart(chart_data, width=0, height=300, use_container_width=True)
-
-data = {"Year": [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023],
-        "Sales": [100, 150, 200, 180, 150, 130, 200, 250, 270],
-        "Revenue": [50, 80, 120, 90, 100, 80, 150, 200, 220]}
-df = pd.DataFrame(data)
-sns.set_palette("Set2")           # 그래프의 기본 색상 테마를 'Set2'로 설정
-fig = plt.figure(figsize=(10, 6)) # 다중라인 그래프 그리기
-
-plt.title("Sales and Revenue Trend")
-plt.xlabel("Year")
-plt.ylabel("Amount")
-
-sns.lineplot(x="Year", y="Sales", data=df, marker="o", label="Sales")
-sns.lineplot(x="Year", y="Revenue", data=df, marker="o", label="Revenue")
-plt.legend(loc="lower center")           # 범례
-st.pyplot(fig)
+    # 결과 출력
+    st.success(f"예측된 품종은 **{predicted_class}** 입니다.")
+    st.write(f"신뢰도: {confidence:.2%}")
